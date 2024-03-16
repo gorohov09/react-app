@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './App.css';
 import CardButton from './components/CardButton/CardButton';
 import Header from './components/Header/Header';
@@ -10,23 +11,28 @@ import LeftPanel from './layouts/LeftPanel/LeftPanel';
 
 function App() {
 
-	const data = [
-		{
-			title: 'title',
-			text: 'text',
-			date: new Date()
-		},
-		{
-			title: 'title2',
-			text: 'text2',
-			date: new Date()
-		},
-		{
-			title: 'title3',
-			text: 'text3',
-			date: new Date()
+	const [items, setItems] = useState([]);
+
+	const addItem = (item) => {
+		const id = items == 0 
+			? 1
+			: Math.max(...items.map(i => i.id)) + 1;
+
+		setItems(oldItems => [...oldItems, {
+			title: item.title,
+			text: item.post,
+			date: new Date(item.date),
+			id: id
+		}]);
+	};
+
+	const sortItems = (a, b) => {
+		if (a.date < b.date) {
+			return 1;
 		}
-	];
+
+		return -1;
+	};
 
 	return (
 		<div className='app'>
@@ -34,18 +40,24 @@ function App() {
 				<Header />
 				<JournalAddButton />
 				<JournaList>
-					<CardButton>
-						<JournalItem
-							title={data[0].title}
-							text={data[0].text}
-							date={data[0].date}
-						/>
-					</CardButton>
+					{
+						items.length == 0 
+							? <p>Записей нет, добавьте первую</p> 
+							: items.sort(sortItems).map(el => (
+								<CardButton key={el.id}>
+									<JournalItem
+										title={el.title}
+										text={el.text}
+										date={el.date}
+									/>
+								</CardButton>
+							))
+					}
 				</JournaList>
 			</LeftPanel>
 
 			<Body>
-				<JournalForm />
+				<JournalForm addItem={addItem}/>
 			</Body>
 		</div>
 	);

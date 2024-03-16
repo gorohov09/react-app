@@ -1,35 +1,54 @@
 import { useState } from 'react';
-import './JournalForm.css';
+import styles from './JournalForm.module.css';
 import Button from '../Button/Button';
 
-function JournalForm() {
-	const [inputData, setInputData] = useState('');
-	const [state, setState] = useState({
-		age: 31
+function JournalForm({ addItem }) {
+	const [formValidState, setFormValidState] = useState({
+		title: true,
+		post: true,
+		date: true
 	});
-
-	const inputChange = (event) => {
-		setInputData(event.target.value);
-	};
 
 	const addJournalItem = (e) => {
 		e.preventDefault();
-		setState({
-			age: ++state.age
-		});
 		const formData = new FormData(e.target);
 		const formProps = Object.fromEntries(formData);
-		console.log(formProps);
+		let isFormValid = true;
+		if (!formProps.title?.trim().length) {
+			setFormValidState(state => ({...state, title: false}));
+			isFormValid = false;
+		} else {
+			setFormValidState(state => ({...state, title: true}));
+		}
+
+		if (!formProps.post?.trim().length) {
+			setFormValidState(state => ({...state, post: false}));
+			isFormValid = false;
+		} else {
+			setFormValidState(state => ({...state, post: true}));
+		}
+
+		if (!formProps.date) {
+			setFormValidState(state => ({...state, date: false}));
+			isFormValid = false;
+		} else {
+			setFormValidState(state => ({...state, date: true}));
+		}
+
+		if (!isFormValid) {
+			return;
+		}
+
+		addItem(formProps);
 	};
 
 	return (
-		<form className='journal-form' onSubmit={addJournalItem}>
-			{state.age}
-			<input type='text' name='title'/>
-			<input type='date' name='date'/>
-			<input type='text' name='tag' onChange={inputChange} value={inputData}/>
-			<textarea name='post' id='' rows='10'> /</textarea>
-			<Button text={'Сохранить'} onClick={() => console.log('Нажали')}/>
+		<form className={styles['journal-form']} onSubmit={addJournalItem}>
+			<input type='text' name='title' className={`${styles['input']} ${formValidState.title ? '' : styles['invalid']}`}/>
+			<input type='date' name='date' className={`${styles['input']} ${formValidState.date ? '' : styles['invalid']}`}/>
+			<input type='text' name='tag' />
+			<textarea name='post' id='' rows='10' className={`${styles['input']} ${formValidState.post ? '' : styles['invalid']}`}/>
+			<Button text={'Сохранить'}/>
 		</form>
 	);
 }
