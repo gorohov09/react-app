@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './JournalForm.module.css';
 import Button from '../Button/Button';
+import cn from 'classnames';
 
 function JournalForm({ addItem }) {
 	const [formValidState, setFormValidState] = useState({
@@ -8,6 +9,24 @@ function JournalForm({ addItem }) {
 		post: true,
 		date: true
 	});
+
+	useEffect(() => {
+		let timerId;
+
+		if (!formValidState.date || !formValidState.post || !formValidState.date) {
+			timerId = setTimeout(() => {
+				setFormValidState({
+					title: true,
+					post: true,
+					date: true
+				});
+			}, 2000);
+		}
+
+		return  () => {
+			clearTimeout(timerId);
+		};
+	}, [formValidState]);
 
 	const addJournalItem = (e) => {
 		e.preventDefault();
@@ -44,10 +63,33 @@ function JournalForm({ addItem }) {
 
 	return (
 		<form className={styles['journal-form']} onSubmit={addJournalItem}>
-			<input type='text' name='title' className={`${styles['input']} ${formValidState.title ? '' : styles['invalid']}`}/>
-			<input type='date' name='date' className={`${styles['input']} ${formValidState.date ? '' : styles['invalid']}`}/>
-			<input type='text' name='tag' />
-			<textarea name='post' id='' rows='10' className={`${styles['input']} ${formValidState.post ? '' : styles['invalid']}`}/>
+			<div>
+				<input type='text' name='title' className={cn(styles['input-title'], {
+					[styles['invalid']]: !formValidState.title
+				})}/>
+			</div>
+			
+			<div className={styles['form-row']}>
+				<label htmlFor="date" className={styles['form-label']}>
+					<img src='/calendar.svg' alt='Иконка календаря'/>
+					<span>Дата</span>
+				</label>
+				<input type='date' name='date' id='date' className={cn(styles['input'], {
+					[styles['invalid']]: !formValidState.date
+				})}/>
+			</div>
+
+			<div className={styles['form-row']}>
+				<label htmlFor="tag" className={styles['form-label']}>
+					<img src='/folder.svg' alt='Иконка папки'/>
+					<span>Метка</span>
+				</label>
+				<input type='text' name='tag' id='tag' className={styles['input']}/>
+			</div>
+			
+			<textarea name='post' id='' rows='10' className={cn(styles['input'], {
+				[styles['invalid']]: !formValidState.post
+			})}/>
 			<Button text={'Сохранить'}/>
 		</form>
 	);
